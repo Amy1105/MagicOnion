@@ -9,7 +9,7 @@ using MessagePack;
 namespace MagicOnion
 {
     /// <summary>
-    /// Represents the result of a Unary call that wraps AsyncUnaryCall as Task-like.
+    /// 表示将 AsyncUnaryCall 包装为 Task-like 的一元调用的结果.
     /// </summary>
     public static class UnaryResult
     {

@@ -21,12 +21,12 @@ namespace Sandbox.AspNetCore
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        // 此方法由运行时调用。 使用此方法向容器添加服务。
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
 
-            services.AddGrpc(); // MagicOnion depends on ASP.NET Core gRPC service.
+            services.AddGrpc(); // MagicOnion 依赖于 ASP.NET Core gRPC 服务。
             services.AddMagicOnion();
                 //.UseRedisGroupRepository(options =>
                 //{
@@ -34,7 +34,7 @@ namespace Sandbox.AspNetCore
                 //});
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        //此方法由运行时调用。 使用此方法配置 HTTP 请求管道。
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -44,7 +44,7 @@ namespace Sandbox.AspNetCore
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                // 默认 HSTS 值为 30 天. 您可能希望针对生产方案更改此设置, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
@@ -57,6 +57,7 @@ namespace Sandbox.AspNetCore
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapMagicOnionHttpGateway("_", app.ApplicationServices.GetService<MagicOnion.Server.MagicOnionServiceDefinition>().MethodHandlers, GrpcChannel.ForAddress("https://localhost:5001"));
+
                 endpoints.MapMagicOnionSwagger("swagger", app.ApplicationServices.GetService<MagicOnion.Server.MagicOnionServiceDefinition>().MethodHandlers, "/_/");
 
                 endpoints.MapMagicOnionService();

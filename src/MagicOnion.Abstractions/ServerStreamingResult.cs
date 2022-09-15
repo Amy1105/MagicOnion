@@ -1,4 +1,4 @@
-﻿using Grpc.Core;
+using Grpc.Core;
 using MessagePack;
 using System;
 using System.Threading.Tasks;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace MagicOnion
 {
     /// <summary>
-    /// Wrapped AsyncServerStreamingCall.
+    /// Wrapped 包装的 AsyncServerStreamingCall.
     /// </summary>
     public struct ServerStreamingResult<TResponse> : IDisposable
     {

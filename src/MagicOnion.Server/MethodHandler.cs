@@ -52,8 +52,14 @@ namespace MagicOnion.Server
 
         public MethodHandler(Type classType, MethodInfo methodInfo, string methodName, MethodHandlerOptions handlerOptions, IServiceProvider serviceProvider)
         {
-            this.methodHandlerId = Interlocked.Increment(ref methodHandlerIdBuild);
+            //Interlocked 为多个线程共享的变量提供原子操作。
+            this.methodHandlerId = Interlocked.Increment(ref methodHandlerIdBuild); //Interlocked.Increment 递增指定变量并将结果存储为原子操作。
+            
             this.serviceProvider = serviceProvider;
+
+            //在派生类中重写时，获取所有实现或继承的接口通过当前的 System.Type。
+            //x.GetTypeInfo().IsGenericType    获取一个值，该值指示当前类型是否为泛型类型
+            //返回一个 System.Type 对象，该对象表示一个泛型类型定义，其中可以构造当前的泛型类型。
 
             var serviceInterfaceType = classType.GetInterfaces().First(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(IService<>)).GetGenericArguments()[0];
 
@@ -61,6 +67,7 @@ namespace MagicOnion.Server
             this.ServiceName = serviceInterfaceType.Name;
             this.MethodInfo = methodInfo;
             this.MethodName = methodName;
+
             MethodType mt;
             this.UnwrappedResponseType = UnwrapResponseType(methodInfo, out mt, out responseIsTask, out var requestType);
             this.MethodType = mt;
@@ -77,16 +84,18 @@ namespace MagicOnion.Server
             this.RequestType = requestType;
 
             this.AttributeLookup = classType.GetCustomAttributes(true)
-                .Concat(methodInfo.GetCustomAttributes(true))
-                .Cast<Attribute>()
-                .ToLookup(x => x.GetType());
+                .Concat(methodInfo.GetCustomAttributes(true)) //连结
+                .Cast<Attribute>()  //强转成Attribute
+                .ToLookup(x => x.GetType()); //
 
             this.filters = handlerOptions.GlobalFilters
-                .OfType<IMagicOnionFilterFactory<MagicOnionFilterAttribute>>()
+                .OfType<IMagicOnionFilterFactory<MagicOnionFilterAttribute>>() //根据指定类型筛选 
                 .Concat(classType.GetCustomAttributes<MagicOnionFilterAttribute>(true).Select(x => new MagicOnionServiceFilterDescriptor(x, x.Order)))
                 .Concat(classType.GetCustomAttributes(true).OfType<IMagicOnionFilterFactory<MagicOnionFilterAttribute>>())
+
                 .Concat(methodInfo.GetCustomAttributes<MagicOnionFilterAttribute>(true).Select(x => new MagicOnionServiceFilterDescriptor(x, x.Order)))
                 .Concat(methodInfo.GetCustomAttributes(true).OfType<IMagicOnionFilterFactory<MagicOnionFilterAttribute>>())
+
                 .OrderBy(x => x.Order)
                 .ToArray();
 
@@ -238,7 +247,8 @@ namespace MagicOnion.Server
             var t = methodInfo.ReturnType;
             if (!t.GetTypeInfo().IsGenericType) throw new Exception($"Invalid return type, path:{methodInfo.DeclaringType!.Name + "/" + methodInfo.Name} type:{methodInfo.ReturnType.Name}");
 
-            // Task<Unary<T>>
+
+            // 判断是不是线程方法   Task<Unary<T>>
             if (t.GetGenericTypeDefinition() == typeof(Task<>))
             {
                 responseIsTask = true;
@@ -249,30 +259,30 @@ namespace MagicOnion.Server
                 responseIsTask = false;
             }
 
-            // Unary<T>
+            //判断是不是 Unary<T>
             var returnType = t.GetGenericTypeDefinition();
             if (returnType == typeof(UnaryResult<>))
             {
-                methodType = MethodType.Unary;
+                methodType = MethodType.Unary;// Grpc：从客户端发送单个请求，从服务器接收单个响应
                 requestTypeIfExists = default;
                 return t.GetGenericArguments()[0];
             }
             else if (returnType == typeof(ClientStreamingResult<,>))
             {
-                methodType = MethodType.ClientStreaming;
+                methodType = MethodType.ClientStreaming; //Grpc：从客户端发送的请求流，从服务器接收的单个响应
                 var genArgs = t.GetGenericArguments();
                 requestTypeIfExists = genArgs[0];
                 return genArgs[1];
             }
             else if (returnType == typeof(ServerStreamingResult<>))
             {
-                methodType = MethodType.ServerStreaming;
+                methodType = MethodType.ServerStreaming; //Grpc：从客户端发送的单个请求，从服务器接收的响应流
                 requestTypeIfExists = default;
                 return t.GetGenericArguments()[0];
             }
             else if (returnType == typeof(DuplexStreamingResult<,>))
             {
-                methodType = MethodType.DuplexStreaming;
+                methodType = MethodType.DuplexStreaming;//Grpc：服务器和客户端都可以同时传输任意数量的请求和响应。
                 var genArgs = t.GetGenericArguments();
                 requestTypeIfExists = genArgs[0];
                 return genArgs[1];
@@ -378,7 +388,7 @@ namespace MagicOnion.Server
                     for (int i = 0; i < lineSplit.Length; i++)
                     {
                         if (!(lineSplit[i].Contains("System.Runtime.CompilerServices")
-                           || lineSplit[i].Contains("直前に例外がスローされた場所からのスタック トレースの終わり")
+                           || lineSplit[i].Contains("上次抛出异常的堆栈跟踪结束")
                            || lineSplit[i].Contains("End of stack trace from the previous location where the exception was thrown")
                            ))
                         {
@@ -579,7 +589,7 @@ namespace MagicOnion.Server
     }
 
     /// <summary>
-    /// Options for MethodHandler construction.
+    /// 方法处理程序构造的选项
     /// </summary>
     public class MethodHandlerOptions
     {

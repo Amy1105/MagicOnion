@@ -1,10 +1,10 @@
-﻿using Grpc.Core;
+using Grpc.Core;
 using System;
 using System.Threading;
 
 namespace MagicOnion
 {
-    // used for MagicOnionEngine assembly scan for boostup analyze speed.
+    // 用于 MagicOnionEngine 程序集扫描以提高分析速度。
     public interface IServiceMarker
     {
 

@@ -75,14 +75,13 @@ namespace MagicOnion
         }
 
         /// <summary>
-        /// Provides means to cleanup after the call.
-        /// If the call has already finished normally (request stream has been completed and response stream has been fully read), doesn't do anything.
-        /// Otherwise, requests cancellation of the call which should terminate all pending async operations associated with the call.
-        /// As a result, all resources being used by the call should be released eventually.
+        /// 提供调用后清理的方法
+        /// 如果调用已经正常结束（请求流已经完成并且响应流已经被完全读取），不做任何事情.
+        /// 否则，请求取消调用，这应该终止与调用关联的所有挂起的异步操作.
+        /// 结果，调用使用的所有资源最终都应该被释放.
         /// </summary>
         /// <remarks>
-        /// Normally, there is no need for you to dispose the call unless you want to utilize the
-        /// "Cancel" semantics of invoking <c>Dispose</c>.
+        /// 通常，除非您想利用调用 <c>Dispose</c> 的“取消”语义，否则您无需释放调用
         /// </remarks>
         public void Dispose()
         {
